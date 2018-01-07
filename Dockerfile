@@ -1,0 +1,50 @@
+FROM ubuntu:14.04
+
+LABEL maintainer="Azohra"
+
+RUN mkdir /root/.ssh
+RUN mkdir ~/.roles
+
+COPY ansible.cfg ~/.ansible.cfg
+COPY .terraformrc ~/.terraformrc
+COPY config ~/.ssh/config
+
+ENV DEBIAN_FRONTEND="noninteractive"
+ENV ANSIBLE_CONFIG="~/.ansible.cfg"
+ENV TERRAFORM_VERSION="0.11.1"
+ENV GOROOT="/usr/bin/go"
+ENV TFROOT="/usr/bin/terraform"
+ENV PATH="$GOPATH/bin:$GOROOT/bin:$TFROOT/bin:$PATH"
+
+WORKDIR /tmp 
+
+# Ansible
+RUN echo "deb http://ppa.launchpad.net/ansible/ansible/ubuntu trusty main" | tee /etc/apt/sources.list.d/ansible.list 
+RUN echo "deb-src http://ppa.launchpad.net/ansible/ansible/ubuntu trusty main" | tee -a /etc/apt/sources.list.d/ansible.list
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 7BB9C367
+RUN apt-get update
+RUN apt-get install -y wget ca-certificates unzip jq 
+RUN apt-get install -y sshpass openssh-client openssl 
+RUN apt-get install -y ansible python-pip git  
+RUN rm -rf /var/lib/apt/lists/*  /etc/apt/sources.list.d/ansible.list
+RUN pip install boto boto3
+
+WORKDIR /
+# Go
+RUN wget https://storage.googleapis.com/golang/go1.9.2.linux-amd64.tar.gz
+RUN sudo tar -xvf go1.9.2.linux-amd64.tar.gz
+RUN sudo mv go /usr/bin
+
+WORKDIR /tmp 
+# Terraform 
+RUN go get -u github.com/squat/terraform-provider-vultr
+RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+RUN unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /usr/bin
+RUN go get -u github.com/squat/terraform-provider-vultr
+
+# Cleanup
+RUN rm -rf /tmp/* 
+
+WORKDIR /
+
+

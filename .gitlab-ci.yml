@@ -1,0 +1,15 @@
+#change
+stages:
+  - build
+
+build:
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+  script:
+    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+    - docker build --pull -t azohra/terrible:latest .
+    - docker push azohra/terrible:latest
+  only:
+    - master
