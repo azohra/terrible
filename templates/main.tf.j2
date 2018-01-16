@@ -8,6 +8,8 @@ terraform {
    }
  }
 
+provider "{{dns_provider}}"
+
 {% if cloud_provider == 'digitalocean' %}
 provider "digitalocean" {}
 
@@ -137,9 +139,6 @@ module "instance" {
   }
 }
 {% endif %}
-
-
-provider "{{dns_provider}}"
 
 module "dns" {
   source      = "git::https://gitlab.com/azohra/terraform/modules/{{dns_provider}}/record.git"

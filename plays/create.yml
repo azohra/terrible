@@ -3,7 +3,7 @@
   connection: local
 
   vars_files:
-    - vars.yml
+    - /builds/ep/box/vars.yml
 
   tasks:
     - name: ensure state_bucket is defined
@@ -47,11 +47,19 @@
       when: region is not defined    
 
     - name: ensure domain is defined
-      fail: msg= domain is not defined" 
+      fail: msg="domain is not defined" 
       when: domain is not defined   
 
+    - name: ensure type is defined
+      fail: msg="type is not defined" 
+      when: type is not defined   
+
+    - name: ensure count is defined
+      fail: msg="count is not defined" 
+      when: count is not defined   
+
     - name: Create main.tf
-      template: src=main.tf.j2 dest=./main.tf
+      template: src=/templates/main.tf.j2 dest=./main.tf
 
     - name: Move main.tf to S3
       aws_s3:

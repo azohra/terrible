@@ -5,10 +5,8 @@ LABEL maintainer="Azohra"
 RUN mkdir /root/.ssh
 RUN mkdir /root/.roles
 RUN mkdir /go
-
-COPY config/ansible.cfg /root/.ansible.cfg
-COPY config/.terraformrc /root/.terraformrc
-COPY config/config /root/.ssh/config
+RUN mkdir /plays
+RUN mkdir /templates
 
 
 ENV DEBIAN_FRONTEND="noninteractive"
@@ -49,6 +47,15 @@ RUN go get -u github.com/squat/terraform-provider-vultr
 
 # Cleanup
 RUN rm -rf /tmp/* 
+
+COPY config/ansible.cfg /root/.ansible.cfg
+COPY config/.terraformrc /root/.terraformrc
+COPY config/config /root/.ssh/config
+
+COPY plays/create.yml /plays/create.yml
+COPY plays/delete.yml /plays/delete.yml
+COPY plays/get.yml /plays/get.yml
+COPY templates/main.tf.j2 /templates/main.tf.j2
 
 WORKDIR /
 
