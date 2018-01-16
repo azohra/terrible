@@ -1,0 +1,26 @@
+---
+- hosts: localhost
+  connection: local
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: ensure env is defined
+      fail: msg="env is not defined" 
+      when: env is not defined
+
+    - name: ensure project is defined
+      fail: msg="project is not defined" 
+      when: project is not defined
+
+    - name: ensure state_bucket is defined
+      fail: msg="state_bucket is not defined" 
+      when: state_bucket is not defined
+
+    - name: Get terraform from S3
+      aws_s3:
+        bucket: "{{state_bucket}}"
+        object: "/box/{{env}}/{{project}}/main.tf"
+        dest: "main.tf"
+        mode: get

@@ -1,0 +1,62 @@
+---
+- hosts: localhost
+  connection: local
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: ensure state_bucket is defined
+      fail: msg="state_bucket is not defined" 
+      when: state_bucket is not defined
+
+    - name: ensure project is defined
+      fail: msg="project is not defined" 
+      when: project is not defined
+
+    - name: ensure env is defined
+      fail: msg="env is not defined" 
+      when: env is not defined
+
+    - name: ensure dns_provider is defined
+      fail: msg="dns_provider is not defined" 
+      when: dns_provider is not defined     
+
+    - name: ensure cloud_provider is defined
+      fail: msg="cloud_provider is not defined" 
+      when: cloud_provider is not defined    
+
+    - name: ensure cpu is defined
+      fail: msg="cpu is not defined" 
+      when: cpu is not defined    
+
+    - name: ensure ram is defined
+      fail: msg="ram is not defined" 
+      when: ram is not defined    
+
+    - name: ensure disk is defined
+      fail: msg="disk is not defined" 
+      when: disk is not defined    
+
+    - name: ensure os is defined
+      fail: msg="os is not defined" 
+      when: os is not defined    
+
+    - name: ensure region is defined
+      fail: msg="region is not defined" 
+      when: region is not defined    
+
+    - name: ensure domain is defined
+      fail: msg= domain is not defined" 
+      when: domain is not defined   
+
+    - name: Create main.tf
+      template: src=main.tf.j2 dest=./main.tf
+
+    - name: Move main.tf to S3
+      aws_s3:
+        bucket: "{{state_bucket}}"
+        object: "/box/{{env}}/{{project}}/main.tf"
+        src: ./main.tf
+        mode: put
+        overwrite: different
