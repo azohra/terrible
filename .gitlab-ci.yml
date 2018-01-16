@@ -13,3 +13,4 @@ build:
     - docker push azohra/terrible:latest
   only:
     - master
+    - beta
