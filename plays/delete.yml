@@ -1,0 +1,31 @@
+---
+- hosts: localhost
+  connection: local
+
+  vars_files:
+    - /builds/ep/box/vars.yml
+
+  tasks:
+    - name: ensure state_bucket is defined
+      fail: msg="state_bucket is not defined" 
+      when: state_bucket is not defined
+
+    - name: ensure project is defined
+      fail: msg="project is not defined" 
+      when: project is not defined
+
+    - name: ensure env is defined
+      fail: msg="env is not defined" 
+      when: env is not defined
+
+    - name: Delete main.tf
+      aws_s3:
+        bucket: "{{state_bucket}}"
+        object: "/box/{{env}}/{{project}}/main.tf"
+        mode: delobj
+
+    - name: Delete terraform.tfstate
+      aws_s3:
+        bucket: "{{state_bucket}}"
+        object: "/box/{{env}}/{{project}}/terraform.tfstate"
+        mode: delobj

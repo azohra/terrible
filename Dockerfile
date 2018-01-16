@@ -3,16 +3,17 @@ FROM ubuntu:14.04
 LABEL maintainer="Azohra"
 
 RUN mkdir /root/.ssh
-RUN mkdir ~/.roles
+RUN mkdir /root/.roles
+RUN mkdir /go
+RUN mkdir /plays
+RUN mkdir /templates
 
-COPY ansible.cfg ~/.ansible.cfg
-COPY .terraformrc ~/.terraformrc
-COPY config ~/.ssh/config
 
 ENV DEBIAN_FRONTEND="noninteractive"
-ENV ANSIBLE_CONFIG="~/.ansible.cfg"
+ENV ANSIBLE_CONFIG="/root/.ansible.cfg"
 ENV TERRAFORM_VERSION="0.11.1"
 ENV GOROOT="/usr/bin/go"
+ENV GOPATH="/go"
 ENV TFROOT="/usr/bin/terraform"
 ENV PATH="$GOPATH/bin:$GOROOT/bin:$TFROOT/bin:$PATH"
 
@@ -28,6 +29,8 @@ RUN apt-get install -y sshpass openssh-client openssl
 RUN apt-get install -y ansible python-pip git  
 RUN rm -rf /var/lib/apt/lists/*  /etc/apt/sources.list.d/ansible.list
 RUN pip install boto boto3
+RUN ansible-galaxy install -p /root/.roles/ geerlingguy.docker
+RUN ansible-galaxy install -p /root/.roles/ geerlingguy.pip
 
 WORKDIR /
 # Go
@@ -44,6 +47,15 @@ RUN go get -u github.com/squat/terraform-provider-vultr
 
 # Cleanup
 RUN rm -rf /tmp/* 
+
+COPY config/ansible.cfg /root/.ansible.cfg
+COPY config/.terraformrc /root/.terraformrc
+COPY config/config /root/.ssh/config
+
+COPY plays/create.yml /plays/create.yml
+COPY plays/delete.yml /plays/delete.yml
+COPY plays/get.yml /plays/get.yml
+COPY templates/main.tf.j2 /templates/main.tf.j2
 
 WORKDIR /
 

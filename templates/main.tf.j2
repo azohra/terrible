@@ -1,0 +1,152 @@
+variable "ssh_public_key" { default = "" }
+
+terraform { 
+   backend "s3" {
+     bucket          = "{{state_bucket}}"
+     key             = "{{project}}/{{env}}/terraform.tfstate"
+     region          = "{{s3_region}}"
+   }
+ }
+
+provider "{{dns_provider}}"
+
+{% if cloud_provider == 'digitalocean' %}
+provider "digitalocean" {}
+
+module "instance" {
+  source          = "git::https://gitlab.com/azohra/terraform/modules/digitalocean/compute.git"
+  count           = "{{count}}"
+  name            = "{{env}}-{{project}}"
+  region          = "{{region}}"
+  image           = "{{os}}"
+  size            = "{{type}}"
+  ssh_key_ids     = ["84:9f:7c:88:f8:7e:e3:1b:35:c5:d4:f1:97:b2:c7:42"]
+}
+
+
+{% elif cloud_provider == 'vultr' %}
+provider "vultr" {}
+
+module "instance" {
+  source = "git::https://gitlab.com/azohra/terraform/modules/vultr/compute.git"
+  count              = "{{count}}"
+  name               = "{{env}}-{{project}}"
+  plan               = "{{type}}"
+  region             = "{{region}}"
+  os                 = "{{os}}"
+  tag                = "{{project}}"
+  create_firewall    = true
+  private_networking = true
+  ssh_key_names      = "azohrabot"
+  firewall_rules     = [
+    {
+      cidr_block = "0.0.0.0/0"
+      protocol = "tcp"
+      from_port= 22
+      to_port = 22
+    },
+    {
+      cidr_block = "0.0.0.0/0"
+      protocol = "tcp"
+      from_port= 80
+      to_port = 80
+    },
+    {
+      cidr_block = "0.0.0.0/0"
+      protocol = "tcp"
+      from_port= 443
+      to_port = 443
+    },
+    {
+      cidr_block = "0.0.0.0/0"
+      protocol = "udp"
+      from_port= 6514
+      to_port = 6514
+    }
+  ]
+}
+
+{% elif cloud_provider == 'azure' %}
+provider "azurerm" {
+}
+
+module "instance" {
+  source                = "git::https://gitlab.com/azohra/terraform/modules/azure/compute.git"
+  count                 = "{{count}}"
+  region                = "{{region}}"
+  username              = "ubuntu"
+  public_ssh_key        = "${var.ssh_public_key}"
+  resource_group_name   = "{{env}}"
+  resource_name         = "{{project}}"
+  subnet                = "10.0.2.0/24"
+  virtual_address_space = "10.0.0.0/16"
+  public_ip_type        = "static"
+  instance_type         = "{{type}}"
+  os_disk_type          = "Premium_LRS"
+  storage_disk_type     = "Premium_LRS"
+  storage_disk_size     = "100"
+  tags                  = {
+    Owner     = "{{env}}"
+    Terraform = true
+    BillTo    = "{{project}}"
+  }
+}
+
+{% elif cloud_provider == 'aws' %}
+provider "aws" {
+    region = "ca-central-1"
+}
+
+module "instance" {
+  source = "git::https://gitlab.com/azohra/terraform/modules/aws/compute.git"
+  count                 = "{{count}}"
+  region                = "{{region}}"
+  resource_name         = "{{env}}-{{project}}"
+  instance_type         = "{{type}}"
+  ami                   = "{{os}}"
+
+  tags                  =  {
+    Owner       = "{{env}}"
+    Terraform   = true
+    BillTo      = "{{project}}"
+  }
+}
+
+{% elif cloud_provider == 'gcp' %}
+variable "gcp_credential" { default = "" }
+
+provider "google" {
+  credentials = "${var.gcp_credential}"
+  project     = "{{project}}"
+  region      = "us-east1"
+}
+
+module "instance" {
+  source = "git::https://gitlab.com/azohra/terraform/modules/gcp/compute.git"
+  count                 = "{{count}}"
+  region                = "{{region}}"
+  zone                  = "b"
+  username              = "ubuntu"
+  public_ssh_key        = "${var.ssh_public_key}"
+  project               = "{{project}}"
+  storage_disk_size     = 100
+  resource_name         = "{{env}}-{{project}}"
+  instance_type         = "{{type}}"
+  tags                  =  {
+    owner        = "{{env|lower}}"
+    terraform    = "true"
+    bill_to      = "{{project|lower}}"
+  }
+}
+{% endif %}
+
+module "dns" {
+  source      = "git::https://gitlab.com/azohra/terraform/modules/{{dns_provider}}/record.git"
+  count       = "{{count}}"
+  type        = "A"
+  ttl         = "60"
+  records     = "${module.instance.ip}"
+  domain      = "{{domain}}"
+  sub_domain  = ".{{env}}"
+  route       = "{{project}}"
+}
