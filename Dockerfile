@@ -11,7 +11,7 @@ RUN mkdir /templates
 
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV ANSIBLE_CONFIG="/root/.ansible.cfg"
-ENV TERRAFORM_VERSION="0.11.1"
+ENV TERRAFORM_VERSION="0.11.4"
 ENV GOROOT="/usr/bin/go"
 ENV GOPATH="/go"
 ENV TFROOT="/usr/bin/terraform"
