@@ -16,6 +16,7 @@ ENV GOROOT="/usr/bin/go"
 ENV GOPATH="/go"
 ENV TFROOT="/usr/bin/terraform"
 ENV PATH="$GOPATH/bin:$GOROOT/bin:$TFROOT/bin:$PATH"
+ENV LYRA_VERSION="1.0.1"
 
 WORKDIR /tmp 
 
@@ -37,6 +38,11 @@ WORKDIR /
 RUN wget https://storage.googleapis.com/golang/go1.9.2.linux-amd64.tar.gz
 RUN sudo tar -xvf go1.9.2.linux-amd64.tar.gz
 RUN sudo mv go /usr/bin
+
+# Lyra
+RUN wget https://github.com/azohra/lyra/releases/download/v${LYRA_VERSION}/lyra_linux_amd64_v${LYRA_VERSION}.tar.gz
+RUN tar -xvzf lyra_linux_amd64_v${LYRA_VERSION}.tar.gz
+RUN mv linux_amd64/lyra /bin
 
 WORKDIR /tmp 
 # Terraform 
