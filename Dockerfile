@@ -11,12 +11,12 @@ RUN mkdir /templates
 
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV ANSIBLE_CONFIG="/root/.ansible.cfg"
-ENV TERRAFORM_VERSION="0.11.5"
+ENV TERRAFORM_VERSION="0.11.7"
 ENV GOROOT="/usr/bin/go"
 ENV GOPATH="/go"
 ENV TFROOT="/usr/bin/terraform"
 ENV PATH="$GOPATH/bin:$GOROOT/bin:$TFROOT/bin:$PATH"
-ENV LYRA_VERSION="1.0.1"
+ENV LYRA_VERSION="1.1.0"
 
 WORKDIR /tmp 
 
