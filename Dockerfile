@@ -11,23 +11,23 @@ RUN mkdir /templates
 
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV ANSIBLE_CONFIG="/root/.ansible.cfg"
-ENV TERRAFORM_VERSION="0.11.7"
+ENV TERRAFORM_VERSION="0.11.8"
 ENV GOROOT="/usr/bin/go"
 ENV GOPATH="/go"
 ENV TFROOT="/usr/bin/terraform"
 ENV PATH="$GOPATH/bin:$GOROOT/bin:$TFROOT/bin:$PATH"
 ENV LYRA_VERSION="1.1.0"
 
-WORKDIR /tmp 
+WORKDIR /tmp
 
 # Ansible
-RUN echo "deb http://ppa.launchpad.net/ansible/ansible/ubuntu trusty main" | tee /etc/apt/sources.list.d/ansible.list 
+RUN echo "deb http://ppa.launchpad.net/ansible/ansible/ubuntu trusty main" | tee /etc/apt/sources.list.d/ansible.list
 RUN echo "deb-src http://ppa.launchpad.net/ansible/ansible/ubuntu trusty main" | tee -a /etc/apt/sources.list.d/ansible.list
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 7BB9C367
 RUN apt-get update
-RUN apt-get install -y wget ca-certificates unzip jq 
-RUN apt-get install -y sshpass openssh-client openssl 
-RUN apt-get install -y ansible python-pip git  
+RUN apt-get install -y wget ca-certificates unzip jq
+RUN apt-get install -y sshpass openssh-client openssl
+RUN apt-get install -y ansible python-pip git
 RUN rm -rf /var/lib/apt/lists/*  /etc/apt/sources.list.d/ansible.list
 RUN pip install boto boto3
 RUN ansible-galaxy install -p /root/.roles/ geerlingguy.docker
@@ -44,15 +44,15 @@ RUN wget https://github.com/azohra/lyra/releases/download/v${LYRA_VERSION}/lyra_
 RUN tar -xvzf lyra_linux_amd64_v${LYRA_VERSION}.tar.gz
 RUN mv linux_amd64/lyra /bin
 
-WORKDIR /tmp 
-# Terraform 
+WORKDIR /tmp
+# Terraform
 RUN go get -u github.com/squat/terraform-provider-vultr
 RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
 RUN unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /usr/bin
 RUN go get -u github.com/squat/terraform-provider-vultr
 
 # Cleanup
-RUN rm -rf /tmp/* 
+RUN rm -rf /tmp/*
 
 COPY config/ansible.cfg /root/.ansible.cfg
 COPY config/.terraformrc /root/.terraformrc
